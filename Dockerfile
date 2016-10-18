@@ -11,10 +11,7 @@ CMD ["/sbin/my_init"]
 RUN apt-get update
 
 # Install Git
-RUN apt-get install -y git 
-
-# Install Nginx
-RUN apt-get install -y nginx
+RUN apt-get install -y git
 
 # Install Supervisor
 RUN apt-get install -y supervisor
@@ -22,6 +19,7 @@ RUN apt-get install -y supervisor
 # Install/setup Python deps
 RUN apt-get install -y python-pip
 RUN pip install requests
+RUN pip install gunicorn django
 
 # Add Scripts
 ADD scripts/start.sh /start.sh
@@ -37,27 +35,14 @@ RUN chmod 755 /usr/bin/pull && chmod 755 /usr/bin/push && chmod 755 /usr/bin/let
 RUN chmod +x /usr/bin/docker-hook
 RUN chmod +x /usr/bin/hook-listener
 
-# Copy our nginx config
-RUN rm -Rf /etc/nginx/nginx.conf
-ADD conf/nginx.conf /etc/nginx/nginx.conf
+RUN mkdir -p /var/www/html/
 
 # Copy supervisor config
 ADD conf/supervisord.conf /etc/supervisord.conf
-
-# Setup nginx site conf
-RUN rm -Rf /etc/nginx/sites-available/*
-RUN mkdir -p /etc/nginx/sites-available/ && \
-mkdir -p /etc/nginx/sites-enabled/ && \
-mkdir -p /etc/nginx/ssl/ && \
-rm -Rf /var/www/* && \
-mkdir /var/www/html/
-ADD conf/nginx-site.conf /etc/nginx/sites-available/default.conf
-ADD conf/nginx-site-ssl.conf /etc/nginx/sites-available/default-ssl.conf
-RUN ln -s /etc/nginx/sites-available/default.conf /etc/nginx/sites-enabled/default.conf
 
 # Clean up APT when done.
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Run
-EXPOSE 443 80 8555
+EXPOSE 8000 8555
 CMD ["/start.sh"]

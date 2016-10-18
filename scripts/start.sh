@@ -12,12 +12,12 @@ if [ ! -z "$SSH_KEY" ]; then
 fi
 
 # Set custom webroot
-if [ ! -z "$WEBROOT" ]; then
-  webroot=$WEBROOT
-  sed -i "s#root /var/www/html;#root ${webroot};#g" /etc/nginx/sites-available/default.conf
-else
-  webroot=/var/www/html
-fi
+#if [ ! -z "$WEBROOT" ]; then
+#  webroot=$WEBROOT
+#  sed -i "s#root /var/www/html;#root ${webroot};#g" /etc/nginx/sites-available/default.conf
+#else
+#  webroot=/var/www/html
+#fi
 
 # Setup git variables
 if [ ! -z "$GIT_EMAIL" ]; then
@@ -71,10 +71,13 @@ fi
 #  sed -i "s/upload_max_filesize = 100M/upload_max_filesize= ${PHP_UPLOAD_MAX_FILESIZE}M/g" /etc/php5/conf.d/php.ini
 # fi
 
+# Set the django project name
+if [ ! -z "$DJANGO_PROJECT_NAME" ]; then
+ sed -i -- "s/project.wsgi/$DJANGO_PROJECT_NAME.wsgi/g" /etc/supervisord.conf
+fi
 
 # Always chown webroot for better mounting
 # chown -Rf nginx.nginx /var/www/html
 
 # Start supervisord and services
 /usr/bin/supervisord -n -c /etc/supervisord.conf
-
